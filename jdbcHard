@@ -1,0 +1,74 @@
+import java.sql.*;
+import java.util.Scanner;
+
+public class ProductJDBC {
+    static final String URL = "jdbc:mysql://localhost:3306/jdbc_experiments";
+    static final String USER = "root";
+    static final String PASSWORD = "password";
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        while (true) {
+            System.out.println("\\n1. Add Product\\n2. View Products\\n3. Delete Product\\n4. Exit");
+            int choice = scanner.nextInt();
+            switch (choice) {
+                case 1:
+                    addProduct();
+                    break;
+                case 2:
+                    viewProducts();
+                    break;
+                case 3:
+                    deleteProduct();
+                    break;
+                case 4:
+                    return;
+            }
+        }
+    }
+
+    public static void addProduct() {
+        try (Connection con = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement ps = con.prepareStatement("INSERT INTO Product VALUES (?, ?, ?, ?)")) {
+            Scanner sc = new Scanner(System.in);
+            System.out.print("Enter ID, Name, Price, Quantity: ");
+            ps.setInt(1, sc.nextInt());
+            ps.setString(2, sc.next());
+            ps.setDouble(3, sc.nextDouble());
+            ps.setInt(4, sc.nextInt());
+            ps.executeUpdate();
+            System.out.println("Product Added!");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void viewProducts() {
+        try (Connection con = DriverManager.getConnection(URL, USER, PASSWORD);
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT * FROM Product")) {
+            while (rs.next()) {
+                System.out.println("ID: " + rs.getInt("ProductID") +
+                                   ", Name: " + rs.getString("ProductName") +
+                                   ", Price: " + rs.getDouble("Price") +
+                                   ", Quantity: " + rs.getInt("Quantity"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void deleteProduct() {
+        try (Connection con = DriverManager.getConnection(URL, USER, PASSWORD);
+             PreparedStatement ps = con.prepareStatement("DELETE FROM Product WHERE ProductID=?")) {
+            Scanner sc = new Scanner(System.in);
+            System.out.print("Enter ProductID to delete: ");
+            ps.setInt(1, sc.nextInt());
+            ps.executeUpdate();
+            System.out.println("Product Deleted!");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
